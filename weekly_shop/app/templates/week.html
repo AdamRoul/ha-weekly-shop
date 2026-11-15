@@ -1,0 +1,91 @@
+{% extends "base.html" %}{% block body %}
+<style>
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px}
+.row{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;user-select:none}
+.row.sel{border-color:var(--acc);background:var(--accbg)}
+.tick{width:28px;height:28px;flex:none;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:700;color:#fff}
+.row.sel .tick{background:var(--acc);border-color:var(--acc)}.row.sel .tick:after{content:"✓"}
+.nm{flex:1;min-width:0}.nm b{display:block;font-weight:600}.nm span{font-size:13px;color:var(--mute)}
+.qty{display:flex;align-items:center;gap:4px}.qty button{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:18px}
+.qty output{min-width:22px;text-align:center}
+.row:not(.sel) .qty{visibility:hidden}
+.hide-off .row:not(.sel){display:none}.hide-off .sec.empty{display:none}
+.addbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:58px;z-index:4}
+.addbox input{flex:1;min-width:180px}
+.hit-hide{display:none!important}
+#pv{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:20;display:none;overflow:auto;padding:20px;text-align:center}
+#pv img{max-width:100%;background:#fff;box-shadow:0 4px 30px #000}
+#pv .btn{position:fixed;top:16px;right:16px}
+.bar{position:sticky;bottom:0;background:var(--bg);padding:12px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:18px}
+</style>
+<h1>This week's list</h1>
+{% if week.todo_error %}<div class="warn">Couldn't read the kitchen list: {{ week.todo_error }}</div>{% endif %}
+{% for p in pending %}<div class="warn">A receipt is waiting to be checked. <a href="review?id={{p.id}}">Review it</a></div>{% endfor %}
+<p class="muted">Pre-ticked: things that are due and things added on the kitchen list. Tap to change.
+{% if last_shop %}Last receipt: {{ last_shop }}.{% endif %}</p>
+
+{% if week.unmatched %}
+<h2>New from the kitchen list</h2>
+{% for u in week.unmatched %}
+<form class="card" method="post" action="add" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+ <b style="flex:1 1 100%">“{{u.text}}”</b><span class="muted" style="flex:1 1 100%">Will print under “Also”. Link it to an item so it goes in the right place next time:</span>
+ <input type="hidden" name="todo_text" value="{{u.text}}">
+ <input type="text" name="name" value="{{u.name}}" list="itemlist" style="flex:1">
+ <select name="section">{% for s in sections %}<option {{'selected' if s=='Other'}}>{{s}}</option>{% endfor %}</select>
+ <button class="btn ghost">Save</button>
+</form>{% endfor %}{% endif %}
+
+<form class="card addbox" method="post" action="add" id="addform">
+ <input type="text" name="name" id="q" placeholder="Find or add an item…" autocomplete="off" required>
+ <select name="section" id="addsec">{% for s in sections %}<option {{'selected' if s=='Other'}}>{{s}}</option>{% endfor %}</select>
+ <button class="btn">Add</button>
+ <span class="muted" id="addhint" style="flex:1 1 100%">Type to find something below and tap it, or add a new item (pick its section).</span>
+</form>
+<label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="hideoff"> Only show ticked items</label>
+<div id="list">
+{% for sec, rows in week.groups %}
+<div class="sec"><h2>{{sec}}</h2><div class="grid">
+ {% for r in rows %}
+ <div class="row {{'sel' if r.selected}}" data-id="{{r.id}}" data-qty="{{r.qty}}">
+  <div class="tick"></div>
+  <div class="nm"><b>{{r.name}}</b><span>{{r.hint}}</span></div>
+  <div class="qty"><button type="button" data-d="-1">−</button><output>{{r.qty}}</output><button type="button" data-d="1">+</button></div>
+ </div>
+ {% endfor %}
+</div></div>
+{% endfor %}
+</div>
+
+<datalist id="itemlist">{% for i in items %}<option value="{{i}}">{% endfor %}</datalist>
+
+<div class="bar">
+ <b id="count">{{n_sel}}</b>&nbsp;items
+ <span style="flex:1"></span>
+ <button type="button" class="btn ghost" id="prev">Preview</button>
+ {% if printer %}<form method="post" action="print" onsubmit="return confirm('Print the list and clear the kitchen list?')"><button class="btn">Print</button></form>{% endif %}
+</div>
+<div id="pv"><button class="btn" type="button" onclick="pv.style.display='none'">Close</button><img alt="List preview"></div>
+<script>
+const pv=document.getElementById('pv');
+document.getElementById('prev').onclick=()=>{pv.querySelector('img').src='list.jpg?t='+Date.now();pv.style.display='block'};
+const q=document.getElementById('q');
+q.oninput=()=>{const t=q.value.trim().toLowerCase();let n=0;
+ document.querySelectorAll('.row').forEach(r=>{const hit=!t||r.querySelector('b').textContent.toLowerCase().includes(t);r.classList.toggle('hit-hide',!hit);if(hit&&t)n++});
+ document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('hit-hide',!!t&&!s.querySelector('.row:not(.hit-hide)')));
+ document.getElementById('addhint').textContent=!t?'Type to find something below and tap it, or add a new item (pick its section).':
+  n?n+' match'+(n>1?'es':'')+' below – tap to tick, or Add to create “'+q.value.trim()+'”.':'Not found – choose a section and tap Add.'};
+document.getElementById('addform').onsubmit=e=>{const t=q.value.trim().toLowerCase();
+ const exact=[...document.querySelectorAll('.row')].find(r=>r.querySelector('b').textContent.toLowerCase()===t);
+ if(exact){e.preventDefault();if(!exact.classList.contains('sel')){exact.classList.add('sel');save(exact)}q.value='';q.oninput()}};
+const list=document.getElementById('list');
+document.getElementById('hideoff').onchange=e=>{list.classList.toggle('hide-off',e.target.checked);marks()};
+function marks(){document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('empty',!s.querySelector('.row.sel')))}
+function save(row){fetch('toggle',{method:'POST',headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({id:row.dataset.id,selected:row.classList.contains('sel'),qty:+row.dataset.qty})});
+ const c=document.getElementById('count');c.textContent=document.querySelectorAll('.row.sel').length+{{week.unmatched|length}};marks()}
+list.addEventListener('click',e=>{const row=e.target.closest('.row');if(!row)return;
+ const b=e.target.closest('button');
+ if(b){row.dataset.qty=Math.max(1,+row.dataset.qty+ +b.dataset.d);row.querySelector('output').textContent=row.dataset.qty}
+ else row.classList.toggle('sel');save(row);if(q.value){q.value='';q.oninput()}});
+</script>
+{% endblock %}

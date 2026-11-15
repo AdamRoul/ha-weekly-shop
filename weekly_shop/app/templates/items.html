@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block body %}
+<h1>Items</h1>
+<p class="muted">Rename, move section, set usual quantity, or untick “Use” to hide something. Renaming an item to an existing name merges the two.</p>
+<form method="post" action="items"><div class="card"><table>
+<tr><th>Name</th><th>Section</th><th>Qty</th><th>Use</th><th class="muted">Receipt names</th></tr>
+{% for r in rows %}<tr>
+ <td><input type="text" name="name_{{r.id}}" value="{{r.name}}"></td>
+ <td><select name="section_{{r.id}}">{% for s in sections %}<option {{'selected' if s==r.section}}>{{s}}</option>{% endfor %}</select></td>
+ <td><input type="number" min="1" name="qty_{{r.id}}" value="{{r.default_qty}}" style="width:64px"></td>
+ <td><input type="checkbox" name="active_{{r.id}}" {{'checked' if r.active}}></td>
+ <td class="muted">{{r.n_prod}}</td></tr>{% endfor %}
+</table></div><div class="bar" style="position:sticky;bottom:0;background:var(--bg);padding:12px 0"><button class="btn">Save changes</button></div></form>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly Shop</title>
+<style>
+:root{--bg:#f6f6f3;--card:#fff;--ink:#1d1d1b;--mute:#76766f;--line:#e4e4de;--acc:#f06c00;--accbg:#fff1e6;--ok:#2f7d32}
+@media (prefers-color-scheme:dark){:root{--bg:#141413;--card:#1f1f1d;--ink:#eeeee8;--mute:#9b9b93;--line:#33332f;--accbg:#3a2614}}
+*{box-sizing:border-box}body{margin:0;font:17px/1.4 -apple-system,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:4px;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav a{padding:8px 14px;border-radius:20px;color:var(--ink);text-decoration:none;white-space:nowrap}
+nav a.on{background:var(--accbg);color:var(--acc);font-weight:600}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:24px;margin:6px 0 14px}h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.btn{display:inline-block;border:0;border-radius:12px;padding:12px 20px;font:inherit;font-weight:600;background:var(--acc);color:#fff;cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
+.muted{color:var(--mute);font-size:14px}.warn{background:#fff4d6;color:#6b4e00;padding:10px 14px;border-radius:10px;margin-bottom:12px}
+input[type=text],input[type=date],input[type=number],select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+table{width:100%;border-collapse:collapse}td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+</style></head><body>
+<nav>
+ <a href="./" class="{{ 'on' if request.path=='/' }}">This week</a>
+ <a href="receipt" class="{{ 'on' if request.path in ['/receipt','/review'] }}">Add receipt</a>
+ <a href="items" class="{{ 'on' if request.path=='/items' }}">Items</a>
+ <a href="products" class="{{ 'on' if request.path=='/products' }}">Receipt names</a>
+</nav>
+<main>{% block body %}{% endblock %}</main>
+</body></html>

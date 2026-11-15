@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block body %}
+<h1>Check the receipt</h1>
+{% if mismatch %}<div class="warn">The receipt says {{data.item_count}} items but {{data.lines|length}} lines were read. Check the list below; if it's badly off, discard and retake the photos.</div>{% endif %}
+<form method="post" action="review">
+<input type="hidden" name="id" value="{{pid}}">
+<div class="card">Shop date <input type="date" name="shop_date" value="{{data.date}}"> &nbsp; <span class="muted">{{data.lines|length}} items{% if data.total %} · £{{'%.2f'|format(data.total)}}{% endif %}</span></div>
+{% if unknown %}
+<h2>New products – what are they on your list?</h2>
+<div class="card"><table>
+<tr><th>On the receipt</th><th>List name</th><th>Section</th></tr>
+{% for u in unknown %}<tr><td><code>{{u.text}}</code></td>
+ <td><input type="text" name="item_{{loop.index0}}" value="{{u.item}}" list="itemlist" required></td>
+ <td><select name="section_{{loop.index0}}">{% for s in sections %}<option {{'selected' if s==u.section}}>{{s}}</option>{% endfor %}</select></td></tr>{% endfor %}
+</table><p class="muted">Section only matters for new list names; existing names keep their section.</p></div>
+{% else %}<p>All products are already known.</p>{% endif %}
+<datalist id="itemlist">{% for i in items %}<option value="{{i}}">{% endfor %}</datalist>
+<h2>Lines in scan order</h2>
+<div class="card"><table>{% for l in data.lines %}<tr><td class="muted">{{loop.index}}</td><td><code>{{l.text}}</code></td><td>{{known.get(l.text,'— new —')}}</td><td>{% if l.price is not none %}£{{'%.2f'|format(l.price|float)}}{% endif %}</td></tr>{% endfor %}</table></div>
+<p><button class="btn" name="action" value="save">Save receipt</button>
+<button class="btn ghost" name="action" value="discard" formnovalidate onclick="return confirm('Discard this receipt?')">Discard</button></p>
+</form>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block body %}
+<h1>{{title}}</h1><div class="card">{{message}}</div>
+{% if show_image %}<p><img src="last.jpg" alt="The list" style="max-width:100%;border:1px solid var(--line);background:#fff"></p><p>
+{% if not done %} <form method="post" action="finish" style="display:inline" onsubmit="return confirm('Mark as printed and clear the kitchen list?')"><button class="btn">I've printed it</button></form>{% endif %}</p>{% endif %}
+<p><a class="btn" href="./">Back to this week</a></p>
+{% endblock %}

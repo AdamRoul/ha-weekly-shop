@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block body %}
+<h1>Add a receipt</h1>
+<form class="card" method="post" action="receipt" enctype="multipart/form-data" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Reading… (up to a minute)'">
+ <p>Photograph the whole receipt, top to bottom, in as many overlapping shots as it needs. Select all the photos together, in order.</p>
+ <p><input type="file" name="photos" accept="image/*" multiple required></p>
+ <button class="btn">Read receipt</button>
+</form>
+{% endblock %}

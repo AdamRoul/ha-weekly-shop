@@ -1,0 +1,35 @@
+name: Weekly Shop
+version: "0.2.0"
+slug: weekly_shop
+description: Learns your supermarket shop from receipt photos and prints the weekly list in walk order
+url: https://github.com/AdamRoul/ha-weekly-shop
+arch:
+  - amd64
+  - aarch64
+init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:cart-outline
+panel_title: Weekly Shop
+homeassistant_api: true
+map:
+  - type: media
+    read_only: false
+  - type: share
+    read_only: false
+options:
+  shop_name: Sainsbury's
+  todo_entity: todo.shopping_list
+  ai_task_entity: ""
+  anthropic_api_key: ""
+  anthropic_model: claude-sonnet-5-5
+  printer_uri: ""
+  ha_token: ""
+schema:
+  shop_name: str
+  todo_entity: str
+  ai_task_entity: str?
+  anthropic_api_key: password?
+  anthropic_model: str
+  printer_uri: str?
+  ha_token: password?

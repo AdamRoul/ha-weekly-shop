@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block body %}
+<h1>Receipt names</h1>
+<p class="muted">How each product on a receipt maps to your list. Change the list name to fix a wrong match.</p>
+<form method="post" action="products"><div class="card"><table>
+<tr><th>On the receipt</th><th>List name</th></tr>
+{% for r in rows %}<tr><td><code>{{r.receipt_text}}</code></td><td><input type="text" name="prod_{{r.id}}" value="{{r.item or ''}}" list="itemlist"></td></tr>{% endfor %}
+</table></div>
+<datalist id="itemlist">{% for i in items %}<option value="{{i}}">{% endfor %}</datalist>
+<p><button class="btn">Save changes</button></p></form>
+{% endblock %}
