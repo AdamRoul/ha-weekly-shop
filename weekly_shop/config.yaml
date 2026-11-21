@@ -1,5 +1,5 @@
 name: Weekly Shop
-version: "0.2.0"
+version: "0.2.1"
 slug: weekly_shop
 description: Learns your supermarket shop from receipt photos and prints the weekly list in walk order
 url: https://github.com/AdamRoul/ha-weekly-shop

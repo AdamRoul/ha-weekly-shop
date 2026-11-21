@@ -66,11 +66,19 @@ def read(images, item_names, section_names, options):
         content.append({"type": "text", "text": prompt})
         r = requests.post("https://api.anthropic.com/v1/messages", timeout=180, headers={
             "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-            json={"model": options.get("anthropic_model") or "claude-sonnet-5-5", "max_tokens": 8000,
+            # effort "low": reading a receipt needs little reasoning, and at the default effort the model's
+            # thinking used most of the token budget, cutting the JSON off part-way through long receipts
+            json={"model": options.get("anthropic_model") or "claude-sonnet-5-5", "max_tokens": 16000,
+                  "output_config": {"effort": "low"},
                   "messages": [{"role": "user", "content": content}]})
         if r.status_code >= 400:
             raise RuntimeError(f"Anthropic API error {r.status_code}: {r.text[:300]}")
-        text = "".join(b.get("text", "") for b in r.json()["content"])
+        resp = r.json()
+        if resp.get("stop_reason") == "max_tokens":
+            raise RuntimeError("The AI's answer was cut off before it finished (receipt too long). Try again, or send the receipt in two halves.")
+        if resp.get("stop_reason") == "refusal":
+            raise RuntimeError("The AI declined to read this receipt. Try a clearer photo.")
+        text = "".join(b.get("text", "") for b in resp["content"] if b.get("type") == "text")
     else:
         entity = options.get("ai_task_entity")
         if not entity:
